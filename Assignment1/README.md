@@ -16,19 +16,17 @@ Argument input_filename is the name of a text file such as input1.txt, that desc
 The last line contains the items "END OF INPUT" and that is how the program can detect that it has reached the end of the file. The other lines of the file contain, in this order, a source city, destination city, and the length in kilometers of the road connecting directly those two cities. Each name will be a single word
 
 
-## Programming Language 
+## Compilation Instruction and Programming Language 
 
 The programming language used is C++.
 
 
-### Compilation Instruction
-
   #### Uninformed Search 
-  g++ -c find_route.cpp -o find_route
-  ./find_route input1.txt Bremen Kassel
+    g++ -c find_route.cpp -o find_route
+    ./find_route input1.txt Bremen Kassel
 
   #### Informed Search
-  g++ -c find_route.cpp -o find_route
-  ./find_route input1.txt Bremen Kassel h_kassel.txt
+    g++ -c find_route.cpp -o find_route
+    ./find_route input1.txt Bremen Kassel h_kassel.txt
   
   
