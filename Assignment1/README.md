@@ -18,7 +18,8 @@ The last line contains the items "END OF INPUT" and that is how the program can 
 
 ## Compilation Instruction and Programming Language 
 
-The programming language used is C++.
+The programming language used is C++ and no thrid party library was used just the SL. 
+The user needs a g++ compiler to compile the code c++11>
 
 
   #### Uninformed Search 
