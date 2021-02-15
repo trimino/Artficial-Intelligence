@@ -30,3 +30,6 @@ The programming language used is C++.
     ./find_route input1.txt Bremen Kassel h_kassel.txt
   
   
+  ## About the Code
+  
+  The code implements A* Search (Informed Search) and Uniform Cost Search (Uninformed Search) algorithm. The code reads in the input file and stores it into a multimap to list all the possible outcomes for a specific node that will be used when determining the successors of one state. The A* does this as well but reads in and stores data from h_kassel.txt and stores the data into a map data structure. The input data is stored into a multimap and the heuristics are stored into a map.
