@@ -1,59 +1,101 @@
 #include "find_route.h"
 
-Node::Node(): _parent{NULL}, _state{"NULL"}, _pathCost{0.0}, _totalCost{0.0}{
-    // Empty Constructor
+
+Node::Node(Node* parent, std::string state, float pathCost, float totalPathCost, float evaluationCost, int depth, bool uSearch):
+_parent{parent}, _state{state}, _pathCost{pathCost}, _totalPathCost{totalPathCost}, _evaluationCost{evaluationCost}, _depth{depth}, _uSearch{uSearch}{
+    // Constructor for Node 
 }
 
-Node::Node(Node* parent, std::string state, float pathCost, float totalCost): _parent{parent}, _state{state}, _pathCost{pathCost}, _totalCost{totalCost}{
-    // Constructor for Node
+Node::Node(): _parent{NULL}, _state{"NULL"}, _pathCost{0.0}, _totalPathCost{0.0}, _evaluationCost{0.0}, _depth{0}, _uSearch{false}{
+    // Empty Constructor for Node 
 }
 
-Node::Node(const Node &node): _parent{node._parent}, _state{node._state}, _pathCost{node._pathCost}, _totalCost{node._totalCost}{
-    // Cop Constructor for Node
+Node::Node(const Node &node): _parent{node._parent}, _state{node._state}, _pathCost{node._pathCost}, _totalPathCost{node._totalPathCost}, 
+_evaluationCost{node._evaluationCost}, _depth{node._depth}, _uSearch{node._uSearch}{
+    // Copy Constructor for Node
 }
 
-float Node::get_pathCost(){
-    return this->_pathCost;
+Node& Node::operator=(const Node &node){
+    // Copy Assignment Constructor for Node
+    if (&node == this)
+        return *this;
+    
+    this->_parent         = node._parent;
+    this->_state          = node._state;
+    this->_pathCost       = node._pathCost;
+    this->_totalPathCost  = node._totalPathCost;
+    this->_evaluationCost = node._evaluationCost;
+    this->_depth          = node._depth;
+    this->_uSearch        = node._uSearch;
+    return *this;
 }
 
-float Node::get_totalCost(){
-    return this->_totalCost;
-}
+// SETTERS
+void Node::setParent(Node *newParent){ this->_parent = newParent; }
+
+// GETTERS 
+float Node::getPathCost()   { return this->_pathCost; }
         
-std::string Node::get_state(){
-    return this->_state;
-}
+bool  Node::getUSearch()    { return this->_uSearch; }
+        
+Node* Node::getParentNode() { return this->_parent; }
+        
+float Node::totalPathCost() { return this->_totalPathCost; }
+        
+float Node::evaluationCost(){ return this->_evaluationCost; }
+        
+std::string Node::getState(){ return this->_state; }
 
-void Node::set_state(std::string state){
-    this->_state = state;
-}
+int Node::getDepth()        { return this->_depth; }
 
-Node* Node::get_parent(){
-    return this->_parent;
-}
-
-void Node::set_parent(Node* parent){
-    this->_parent = parent;
-}
-
-bool operator<(const Node &lhs, const Node &rhs){
-    // Object with the least value will be on the top
-    return lhs._pathCost < rhs._pathCost;
-}
-
-
-// To help Compare Node* in the priority que
-bool CompareMyNodePtr::operator() (Node* left, Node *right){
-    return left->get_pathCost() > right->get_pathCost();
-}
 
 /*
-Name        : read_input_file
+Name        : opeartor()
+Parmaeters  : Two Node pointers
+Description : Overloading the '>' opertor two sort/compare two Node Pointers (helps create a min heap)
+Returns     : a boolean (in this case false) value if the left > right
+*/
+bool CompareMyNodePtr::operator() (Node* left, Node *right){
+    if (left->getUSearch())
+        return left->totalPathCost()  > right->totalPathCost();
+    else
+        return left->evaluationCost() > right->evaluationCost();
+}
+
+
+
+/*
+Name        : readHeuristicFile
+Parameters  : A reference to a map to be populated with a key that is type string and value for heuristic value for that key
+Description : Populates the map and brings the heuristic values into code to be used for informed searches
+Returns     : void
+*/
+void readHeuristicFile(std::string filename, std::map<std::string, float> &h){
+    std::ifstream ifs {filename};
+    if (!ifs)
+        std::cerr << "Could not read in file: " << filename << std::endl;
+    
+    std::string city;
+    float cost;
+    while (ifs){
+        std::string line;
+        std::getline(ifs, line);
+        std::stringstream ss(line);
+        
+        ss >> city >> cost;
+        if (city != "END")
+            h.insert({city, cost});
+    }
+}
+
+
+/*
+Name        : readInputFile
 Parameters  : Reference multimap that uses a string as a key to hold all possible actions for the current state and the filename where the data is store 
 Description : Reads in the problem data into a multimap to be used in informed and uninformed search
-Returns     : Void
+Returns     : void
 */
-void read_input_file(std::string filename, std::multimap<std::string, std::pair<std::string, float> > &data){
+void readInputFile(std::string filename, std::multimap<std::string, std::pair<std::string, float> > &data){
     std::ifstream ifs {filename};
     if (!ifs)
         std::cerr << "Could not read in file: " << filename << std::endl;
@@ -71,56 +113,17 @@ void read_input_file(std::string filename, std::multimap<std::string, std::pair<
         
         if (src != "END")
             data.insert({src, std::make_pair(dest, pathCost)});
-        
     }   
 }
 
 
 /*
-Name        : read_heuristic_file
-Parameters  : A reference to a map to be populated with a key that is type string and value for heuristic value for that key
-Description : Populates the map and brings the heuristic values into code to be used for informed searches
-Returns     : Void
-*/
-void read_heuristic_file(std::string filename, std::map<std::string, float> &h){
-    std::ifstream ifs {filename};
-    if (!ifs)
-        std::cerr << "Could not read in file: " << filename << std::endl;
-    
-    std::string city;
-    float cost;
-    while (ifs){
-        std::string line;
-        std::getline(ifs, line);
-        std::stringstream ss(line);
-        
-        ss >> city >> cost;
-        if (city != "END")
-            h.insert({city, cost});
-    }
-    
-}
-
-
-/*
-Name        : create_node
-Parameters  : Parent node to child (referenced), the avaiableCity is one of the actions that the parent can take, pathcost is the cost of getting there to the parent
-Description : Create a new node 
-Returns     : A pointer to the new node
-*/
-Node* create_node(Node &parent, std::string avaialableCity, float pathCost){
-    Node *child = new Node{&parent, avaialableCity, pathCost, parent.get_totalCost() + pathCost};
-    return child;
-}
-
-
-/*
-Name    : is_explored
+Name        : isExplored
 Parameters  : A vector of strings that represent the nodes that have been explored and the successors of the current state
 Description : Check to see if a city has been explored
 Returns     : Returns a bool (true if it has been explored)
 */
-bool is_explored(std::vector<std::string> explored, std::string state){
+bool isExplored(std::vector<std::string> explored, std::string state){
     for (int i = 0; i < explored.size(); ++i){
         if (explored.at(i) == state)
             return true;
@@ -128,101 +131,6 @@ bool is_explored(std::vector<std::string> explored, std::string state){
     return false;
 }
 
-
-/*
-Name    : is_queue
-Parameters  : A vector of nodes that are in the priority queue
-Description : Determine if current node is in the queue
-Returns     : boolean (true if it is in the queue)
-*/
-bool is_queue(std::vector<Node> frontier, Node current){
-    for (int i = 0; i < frontier.size(); ++i){
-        Node a = frontier.at(i);
-        if (a.get_state() == current.get_state()){
-            return true;
-        }
-    }
-    
-    return false;
-}
-
-
-/*
-Name        : uninformed_search
-Parameters  : Start and Final destination. A multimap that describes the data being used to solve problem. Counter for nodes generated and expanded
-Description : Perform Uniform Cost Search to solve problem (uninformed search)
-Returns     : The start node if no route can be determined and a linked list with the head being at the goal city
-*/
-Node* uninformed_search(std::string start, std::string dest, std::multimap<std::string, std::pair<std::string, float>> data, int &nodes_generated, int &nodes_expanded){
-    Node* startNode= new Node {NULL, start, 0.0, 0.0};
-
-    //std::priority_queue <Node*> frontier;
-    std::priority_queue<Node*, std::vector<Node*>, CompareMyNodePtr> frontier;
-    std::vector<std::string> closed;
-    frontier.push(startNode);
-
-    while (!frontier.empty()){
-        // Chooses the lowest cost node in frontier
-        Node* nodePop = frontier.top();
-        frontier.pop();
-        nodes_expanded++;
-
-        std::string state = nodePop->get_state();
-
-        // return Goal state node if nodePop equals the dest string
-        if (state == dest)
-            return nodePop;
-        
-        // Check to see if node has been explored or visited to see if it needs to be expanded
-        if (!is_explored(closed, state)){
-            closed.push_back(state);        
-            nodes_expanded++;
-            expand(nodePop, frontier, data, nodes_generated);
-        }
-    }
-
-    return startNode;
-}
-
-
-Node* informed_search(std::string start, std::string dest, std::multimap<std::string, std::pair<std::string, float>> data, std::map<std::string, float> heuristics, 
-    int &nodes_generated, int &nodes_expanded){
-            Node* startNode= new Node {NULL, start, 0.0, 0.0};
-
-    std::priority_queue <Node*, std::vector<Node*>, CompareMyNodePtr> frontier;
-    std::vector<std::string> explored;
-    frontier.push(startNode);
-
-    while (!frontier.empty()){
-        // Chooses the lowest cost node in frontier
-        Node* nodePop = frontier.top();
-        frontier.pop();
-        
-
-        std::string state = nodePop->get_state();
-    
-        // return Goal state node if nodePop equals the dest string
-        if (state == dest)
-            return nodePop;
-        
-        // Check to see if node has been explored or visited to see if it needs to be expanded
-        if (!is_explored(explored, state)){
-            explored.push_back(state);      
-            nodes_expanded++;
-            // Loop through the multimap to see all possible outcomes for nodePop and create a childnode
-            for (auto i = data.begin(); i != data.end(); ++i){
-                if (i->first == state){
-                    float h = heuristics.at(i->second.first) + i->second.second;
-                    Node *child = new Node{&(*nodePop), i->second.first, h, nodePop->get_totalCost() + i->second.second};
-                    nodes_generated++;
-                    frontier.push(child);
-                }
-            }
-        }
-    }
-    
-    return startNode;
-}
 
 /*
 Name        : reverse
@@ -236,9 +144,9 @@ Node* reverse(Node* head){
     Node *next = NULL;
 
     while(current_head != NULL){
-        next = current_head->get_parent();
-
-        current_head->set_parent(prev);
+        next = current_head->getParentNode();
+        
+        current_head->setParent(prev);
 
         prev = current_head;
         current_head = next;
@@ -249,99 +157,108 @@ Node* reverse(Node* head){
 }
 
 
-void expand(Node* node, std::priority_queue<Node*, std::vector<Node*>, CompareMyNodePtr> &frontier, std::multimap<std::string, std::pair<std::string, float>> actions, int &n_gen){
-    std::vector<Node*> successors;
-    std::string currentState = node->get_state();
+/*
+Name        : expand
+Parameters  : Pointer to the parent node. A reference to a priority queue. A multimap that describes the problem, A map that describes heuristc values. A counter to keep track of number of nodes generated
+Description : Expand the current state by generating successors  
+Returns     : void
+*/
+void expand(Node* n, std::priority_queue<Node*, std::vector<Node*>, CompareMyNodePtr> &f, std::multimap<std::string, std::pair<std::string, float>> a, std::map<std::string, float> h, int &nGenerate){
+    for (auto i = a.begin(); i != a.end(); ++i){
+        if (i->first == n->getState()){
+            if (n->getUSearch())
+                f.push( new Node(&(*n), i->second.first, i->second.second, i->second.second + n->totalPathCost(), 0.0, n->getDepth() + 1, n->getUSearch()) );
+            else
+                f.push( new Node(&(*n), i->second.first, i->second.second, i->second.second + n->totalPathCost(), h[i->second.first] + n->getPathCost(), n->getDepth() + 1, n->getUSearch()) );
+            nGenerate++;
+        }
 
-    for (auto i = actions.begin(); i != actions.end(); ++i){
-        if (i->first == currentState){
-            Node* n = create_node(*node, i->second.first, i->second.second);
-            successors.push_back(n);
-            n_gen++;
+        else if (i->second.first == n->getState()){
+            if (n->getUSearch())
+                f.push( new Node(&(*n), i->first, i->second.second, i->second.second + n->totalPathCost(), 0, n->getDepth() + 1, n->getUSearch()) );
+            else
+                f.push( new Node(&(*n), i->first, i->second.second, i->second.second + n->totalPathCost(), h[i->first] + n->getPathCost(), n->getDepth() + 1, n->getUSearch()) );
+            nGenerate++;
         }
     }
-
-    for (int i = 0; i < successors.size(); ++i)
-        frontier.push(successors.at(i));    
 }
 
 
 int main(int argc, char** argv){
-    std::multimap<std::string, std::pair<std::string, float>> data;
-    std::map<std::string, float> heuristic;
-    int nodes_generated = 0, nodes_expanded = 0;
+    std::priority_queue<Node*, std::vector<Node*>, CompareMyNodePtr> fringe;        // Priority queue for UCS
+    std::multimap<std::string, std::pair<std::string, float>> data;                 // Multimap to describe the problem set
+    std::map<std::string, float> hValues;                                           // Map that describes the heuristic values
+    int nGenerated = 1, nExpanded = 0;                                              // Counters for nodes generated and expanded
+    std::vector<std::string> closed;                                                // Vector to hold all the states that we have visited
+    std::vector<Node*> holdAll;                                                     // Hold all nodes to be deleted at the end (memory management)
+    Node *head = NULL;                                                              // Keeps track of the head (goal state node pointer)
+    bool uSearch = false;
+      
 
+    // Figure out if we are doing uninformed or informed search
+    if (argc == 4)
+        uSearch = true;
+    else if (argc == 5)
+        uSearch = false;
+    else
+        return EXIT_FAILURE;
+    
 
-    // do uninformed search (Uniform Cost Search)
-    if (argc == 4){
-        read_input_file(argv[1], data);    
-        Node *uis = uninformed_search(argv[2], argv[3], data, nodes_generated, nodes_expanded);
+    // Read and store input file as a multimap 
+    // If you are doing informed search then read in heuristic files
+    readInputFile(argv[1], data);
+    if (!uSearch)
+        readHeuristicFile(argv[4], hValues);
     
-        std::cout << "nodes_expanded: "     << nodes_expanded       << std::endl;
-        std::cout << "nodes_generated: "    << nodes_generated      << std::endl;
-        
-        // (London to Kassel)
-        if (uis->get_state() == argv[2]){
-            std::cout << "distance: infinity" << std::endl;
-            std::cout << "route: " << std::endl << "none" << std::endl;
-        }else{
-            std::cout << "distance: " << uis->get_totalCost() << " km" << std::endl;
-            std::cout << "route: " << std::endl;
+
+    // Initialize fringe (priority_queue) with start node and closed as empty
+    if (uSearch)
+        fringe.push( new Node(NULL, argv[2], 0.0, 0.0, 0.0, 0, uSearch) );
+    else
+        fringe.push( new Node(NULL, argv[2], 0.0, 0.0, hValues[argv[2]], 0, uSearch) );
     
-            // Reverse linked list and displa results
-            Node *head = reverse(uis);
-            while (head->get_parent() != NULL){
-                std::cout << head->get_state() << " to ";
-                head = head->get_parent();
-                std::cout << head->get_state() << ", " << head->get_pathCost() << " km"<< std::endl; 
+
+    // Perform search
+    while (!fringe.empty()){
+        // Pop node with the cheapest value
+        Node *popNode = fringe.top();
+        fringe.pop();
+
+        // Increment the expanded nodes counter
+        nExpanded++;
+
+        // Check to see if it is a goal state
+        if (popNode->getState() == argv[3]){
+            std::cout << "Nodes Expanded: "  << nExpanded  << std::endl;
+            std::cout << "Nodes Generated: " << nGenerated << std::endl;
+            std::cout << "Distance: " << popNode->totalPathCost() << " km" << std::endl;
+            std::cout << "Route: " << std::endl;
+
+            // Reverse linked list and display results
+            head = reverse(popNode);
+
+            // Print out linked list (path to goal)
+            while (head->getParentNode() != NULL){
+                std::cout << head->getState() << " to ";
+                head = head->getParentNode();
+                std::cout << head->getState() << ", " << head->getPathCost() << " km"<< std::endl; 
             }
-        }       
-    }
 
-
-
-    if (argc == 5){
-        read_heuristic_file(argv[4], heuristic);
-        read_input_file(argv[1], data);
-        Node* ifs = informed_search(argv[2], argv[3], data, heuristic, nodes_generated, nodes_expanded);
-
-        std::cout << "nodes_expanded: "     << nodes_expanded       << std::endl;
-        std::cout << "nodes_generated: "    << nodes_generated      << std::endl;
-
-        if (ifs->get_state() == argv[2]){
-            std::cout << "distance: infinity" << std::endl;
-            std::cout << "route: " << std::endl << "none" << std::endl;
+            // TODO: Add code to free memory
+            return EXIT_SUCCESS;
         }else{
-            std::cout << "distance: " << ifs->get_totalCost() << " km" << std::endl;
-            std::cout << "route: " << std::endl;
-
-            // Reverse linked list and displa results
-            Node *head = reverse(ifs);
-            while (head->get_parent() != NULL){
-                std::cout << head->get_state() << " to ";
-                head = head->get_parent();
-                std::cout << head->get_state() << ", " << head->get_pathCost() - heuristic.at(head->get_state()) << " km"<< std::endl; 
+            // Check to see if the node exists in the closed state
+            if ( !isExplored(closed, popNode->getState()) ){
+                closed.push_back(popNode->getState());
+                expand(popNode, fringe, data, hValues, nGenerated);
             }
         }
     }
-    
 
-    
-    
-    // Use for debugging heuristic map
-    // int cnt = 0;
-    // std::map<std::string, float>::iterator it;
-    // for (auto const &i : heuristic){
-    //     cnt++;
-    //     std::cout << cnt << ") " << i.first << " - " << i.second << std::endl;
-    // }
-    
-    // Use for debugging data multimap
-    // int count = 0;
-    // for(auto i = data.begin(); i != data.end(); ++i){
-    //     count ++;
-    //     std::cout << count << ") " << i->first << " -> " << i->second.first << " - " << i->second.second << std::endl;
-    // }
-
+    // Could not find goal state meaning the route is infinte
+    std::cout << "Nodes Expanded: "  << nExpanded  << std::endl;
+    std::cout << "Nodes Generated: " << nGenerated << std::endl;    
+    std::cout << "Distance: " << "infinity" << std::endl;
+    std::cout << "Route: \nnone" << std::endl;
     return EXIT_SUCCESS;
 }
