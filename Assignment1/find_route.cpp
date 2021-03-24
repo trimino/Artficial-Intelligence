@@ -182,6 +182,19 @@ void expand(Node* n, std::priority_queue<Node*, std::vector<Node*>, CompareMyNod
 }
 
 
+/*
+Name        : freeMemory
+Parameters  : A vector that holds a pointer of Node objects
+Description : Free all the memory in the program for each STATE/NODE
+Returns     : void
+*/
+void freeNode(std::vector<Node*> &f){
+    for (auto i : f)
+        free(i);
+}
+
+
+
 int main(int argc, char** argv){
     std::priority_queue<Node*, std::vector<Node*>, CompareMyNodePtr> fringe;        // Priority queue for UCS
     std::multimap<std::string, std::pair<std::string, float>> data;                 // Multimap to describe the problem set
@@ -222,6 +235,9 @@ int main(int argc, char** argv){
         Node *popNode = fringe.top();
         fringe.pop();
 
+        // Use for memory management 
+        holdAll.push_back(popNode);
+        
         // Increment the expanded nodes counter
         nExpanded++;
 
@@ -243,6 +259,8 @@ int main(int argc, char** argv){
             }
 
             // TODO: Add code to free memory
+            freeNode(holdAll);
+
             return EXIT_SUCCESS;
         }else{
             // Check to see if the node exists in the closed state
@@ -258,5 +276,7 @@ int main(int argc, char** argv){
     std::cout << "Nodes Generated: " << nGenerated << std::endl;    
     std::cout << "Distance: " << "infinity" << std::endl;
     std::cout << "Route: \nnone" << std::endl;
+
+    freeNode(holdAll);
     return EXIT_SUCCESS;
 }

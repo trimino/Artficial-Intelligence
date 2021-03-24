@@ -78,5 +78,7 @@ void readHeuristicFile(std::string filename, std::map<std::string, float> &heuri
 
 bool isExplored(std::vector<std::string> explored, std::string state);
 
+void freeNode(std::vector<Node*> &f);
+
 Node* reverse(Node* head);
 #endif
