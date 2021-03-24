@@ -24,11 +24,11 @@ The last line contains the items "END OF INPUT" and that is how the program can 
 
   #### Uninformed Search 
     > g++ -c find_route.cpp -o find_route
-    ./find_route input1.txt Bremen Kassel
+    >./find_route input1.txt Bremen Kassel
 
   #### Informed Search
-    g++ -c find_route.cpp -o find_route
-    ./find_route input1.txt Bremen Kassel h_kassel.txt
+    >g++ -c find_route.cpp -o find_route
+    >./find_route input1.txt Bremen Kassel h_kassel.txt
   
   
  ## About the Code
