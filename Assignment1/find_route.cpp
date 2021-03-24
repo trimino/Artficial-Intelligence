@@ -169,15 +169,13 @@ void expand(Node* n, std::priority_queue<Node*, std::vector<Node*>, CompareMyNod
             if (n->getUSearch())
                 f.push( new Node(&(*n), i->second.first, i->second.second, i->second.second + n->totalPathCost(), 0.0, n->getDepth() + 1, n->getUSearch()) );
             else
-                f.push( new Node(&(*n), i->second.first, i->second.second, i->second.second + n->totalPathCost(), h[i->second.first] + n->getPathCost(), n->getDepth() + 1, n->getUSearch()) );
+                f.push( new Node(&(*n), i->second.first, i->second.second, i->second.second + n->totalPathCost(), h[i->second.first] + n->totalPathCost() + i->second.second, n->getDepth() + 1, n->getUSearch()) );
             nGenerate++;
-        }
-
-        else if (i->second.first == n->getState()){
+        } else if (i->second.first == n->getState()){
             if (n->getUSearch())
                 f.push( new Node(&(*n), i->first, i->second.second, i->second.second + n->totalPathCost(), 0, n->getDepth() + 1, n->getUSearch()) );
             else
-                f.push( new Node(&(*n), i->first, i->second.second, i->second.second + n->totalPathCost(), h[i->first] + n->getPathCost(), n->getDepth() + 1, n->getUSearch()) );
+                f.push( new Node(&(*n), i->first, i->second.second, i->second.second + n->totalPathCost(), h[i->first] + n->totalPathCost() + i->second.second, n->getDepth() + 1, n->getUSearch()) );
             nGenerate++;
         }
     }
