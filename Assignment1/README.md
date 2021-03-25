@@ -2,11 +2,11 @@
 
 **Assignment 1** is implementing a state space search algorithm that can a find a route between any two cities. The program will be called find_route, and will take exactly commandline aruments as follows:
 
-  ./find_route input1.txt Bremen Kassel (For doing Uninformed Search)
+  >./find_route input1.txt Bremen Kassel (For doing Uninformed Search)
   
   or 
   
-  ./find_route input1.txt Bremen Kassel h_kassel.txt (For doing Informed Search)
+  >./find_route input1.txt Bremen Kassel h_kassel.txt (For doing Informed Search)
 
 Argument input_filename is the name of a text file such as input1.txt, that describes road connections between cities in some part of the world. For example, the road system described by file input1.txt can be visualized with the photo below:
 
