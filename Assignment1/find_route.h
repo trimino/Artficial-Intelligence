@@ -1,3 +1,6 @@
+// Written by: David Trimino
+// 1001659459
+
 #ifndef __FIND_H
 #define __FIND_H
 
