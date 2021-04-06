@@ -23,7 +23,7 @@ The last line contains the items "END OF INPUT" and that is how the program can 
 
 
   #### Uninformed Search 
-    > g++ -c find_route.cpp -o find_route
+    > g++ -c find_route.cpp -o find_route<br>
     >./find_route input1.txt Bremen Kassel
 
   #### Informed Search
